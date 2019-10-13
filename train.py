@@ -9,6 +9,7 @@ from tqdm import tqdm
 from torch.optim import lr_scheduler
 from model import PreTrain
 from dataloader import UAVDatasetTuple
+from utils import draw_roc_curve, calculate_precision_recall, visualize_sum_testing_result, visualize_lstm_testing_result
 
 
 os.environ["CUDA_VISIBLE_DEVICES"]="3"
@@ -101,8 +102,8 @@ def main():
     device = torch.device("cuda")
 
     all_dataset = UAVDatasetTuple(task_path=args.data_path, label_path=args.label_path)
-    # positive_ratio, negative_ratio = all_dataset.get_class_count()
-    # weight = torch.FloatTensor((positive_ratio, negative_ratio))
+    positive_ratio, negative_ratio = all_dataset.get_class_count()
+    weight = torch.FloatTensor((positive_ratio, negative_ratio))
     train_size = int(args.split_ratio * len(all_dataset))
     test_size = len(all_dataset) - train_size
     train_dataset, test_dataset = torch.utils.data.random_split(all_dataset, [train_size, test_size])
