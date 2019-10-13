@@ -37,8 +37,8 @@ class PreTrain(nn.Module):
         self.pNet_fc2 = nn.Linear(4096, 4096*4)
         self.pNet_fc3 = nn.Linear(4096*4, 100*100)
 
-    def pNet_forward(self, x):
-        trans = self.stn_forward(x)
+    def _pNet_forward(self, x):
+        trans = self._stn_forward(x)
         x = x.transpose(2, 1)
         x = torch.bmm(x, trans)
         x = x.transpose(2, 1)
@@ -60,7 +60,7 @@ class PreTrain(nn.Module):
         return x
 
     # STN to support the pNet
-    def stn_forward(self, x):
+    def _stn_forward(self, x):
         batch_size = x.size()[0]
         x = self.relu(self.stn_bn1(self.stn_conv1(x)))
         x = self.relu(self.stn_bn2(self.stn_conv2(x)))

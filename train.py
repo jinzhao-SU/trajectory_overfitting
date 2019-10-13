@@ -11,7 +11,7 @@ from model import PreTrain
 from dataloader import UAVDatasetTuple
 
 
-os.environ["CUDA_VISIBLE_DEVICES"]="3"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 def train(model, train_loader, device, optimizer, criterion, epoch):
     model.train()
@@ -101,8 +101,8 @@ def main():
     device = torch.device("cuda")
 
     all_dataset = UAVDatasetTuple(task_path=args.data_path, label_path=args.label_path)
-    # positive_ratio, negative_ratio = all_dataset.get_class_count()
-    # weight = torch.FloatTensor((positive_ratio, negative_ratio))
+    positive_ratio, negative_ratio = all_dataset.get_class_count()
+    weight = torch.FloatTensor((positive_ratio, negative_ratio))
     train_size = int(args.split_ratio * len(all_dataset))
     test_size = len(all_dataset) - train_size
     train_dataset, test_dataset = torch.utils.data.random_split(all_dataset, [train_size, test_size])
