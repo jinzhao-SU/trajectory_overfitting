@@ -11,7 +11,7 @@ class PreTrain(nn.Module):
         self.avg_pool = nn.AvgPool2d(kernel_size=2, stride=2)
         self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
-        self.stn_conv1 = nn.Conv1d(5, 64, 1)
+        self.stn_conv1 = nn.Conv1d(4, 64, 1)
         self.stn_conv2 = nn.Conv1d(64, 128, 1)
         self.stn_conv3 = nn.Conv1d(128, 1024, 1)
 
@@ -26,7 +26,7 @@ class PreTrain(nn.Module):
         self.stn_bn5 = nn.BatchNorm1d(256)
 
         # pNet embedding model declaration
-        self.pNet_conv1 = torch.nn.Conv1d(5, 64, 1)
+        self.pNet_conv1 = torch.nn.Conv1d(4, 64, 1)
         self.pNet_conv2 = torch.nn.Conv1d(64, 128, 1)
         self.pNet_conv3 = torch.nn.Conv1d(128, 1024, 1)
         self.pNet_bn1 = nn.BatchNorm1d(64)
@@ -79,17 +79,16 @@ class PreTrain(nn.Module):
         #                                            0, 0, 0, 0, 1]).astype(np.float32))).view(1, 25).repeat(batch_size,
         #                                                                                                    1)
 
-        iden = torch.tensor([1, 0, 0, 0, 0,
-                             0, 1, 0, 0, 0,
-                             0, 0, 1, 0, 0,
-                             0, 0, 0, 1, 0,
-                             0, 0, 0, 0, 1], dtype=torch.float32).view(1, 25).repeat(batch_size, 1)
+        iden = torch.tensor([1, 0, 0, 0,
+                             0, 1, 0, 0,
+                             0, 0, 1, 0,
+                             0, 0, 0, 1], dtype=torch.float32).view(1, ).repeat(batch_size, 1)
 
         if x.is_cuda:
             iden = iden.cuda()
 
         x = x + iden
-        x = x.view(-1, 5, 5)
+        x = x.view(-1, 4, 4)
         return x
 
     def forward(self, x_image=None):
@@ -99,7 +98,7 @@ class PreTrain(nn.Module):
         return x
 
 if __name__ == '__main__':
-    test_tensor = torch.rand(2, 5, 1024)
+    test_tensor = torch.rand(2, 4, 1024)
     test = PreTrain()
     # print(test.stn_forward(test_tensor))
     print(test.pNet_forward(test_tensor).shape)
