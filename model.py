@@ -17,7 +17,7 @@ class PreTrain(nn.Module):
 
         self.stn_fc1 = nn.Linear(1024, 512)
         self.stn_fc2 = nn.Linear(512, 256)
-        self.stn_fc3 = nn.Linear(256, 25)
+        self.stn_fc3 = nn.Linear(256, 16)
 
         self.stn_bn1 = nn.BatchNorm1d(64)
         self.stn_bn2 = nn.BatchNorm1d(128)
@@ -34,8 +34,8 @@ class PreTrain(nn.Module):
         self.pNet_bn3 = nn.BatchNorm1d(1024)
 
         self.pNet_fc1 = nn.Linear(32*32, 4096)
-        self.pNet_fc2 = nn.Linear(4096, 4096*4)
-        self.pNet_fc3 = nn.Linear(4096*4, 100*100)
+        self.pNet_fc2 = nn.Linear(4096, 8192)
+        self.pNet_fc3 = nn.Linear(8192, 100*100)
 
     def _pNet_forward(self, x):
         trans = self._stn_forward(x)
@@ -53,9 +53,10 @@ class PreTrain(nn.Module):
         x = self.pNet_fc1(x)
         x = self.pNet_fc2(x)
         x = self.pNet_fc3(x)
+        x = torch.sigmoid(x)
 
 
-        x = x.view(-1,100,100)
+        x = x.view(-1,100,100, 1)
 
         return x
 
@@ -82,7 +83,7 @@ class PreTrain(nn.Module):
         iden = torch.tensor([1, 0, 0, 0,
                              0, 1, 0, 0,
                              0, 0, 1, 0,
-                             0, 0, 0, 1], dtype=torch.float32).view(1, ).repeat(batch_size, 1)
+                             0, 0, 0, 1], dtype=torch.float32).view(1, 16).repeat(batch_size, 1)
 
         if x.is_cuda:
             iden = iden.cuda()
@@ -92,13 +93,8 @@ class PreTrain(nn.Module):
         return x
 
     def forward(self, x_image=None):
-        x_image = x_image
+        x_image = x_image.float()
+        x_image = x_image.permute(0, 2, 1)
 
         x = self._pNet_forward(x_image)
         return x
-
-if __name__ == '__main__':
-    test_tensor = torch.rand(2, 4, 1024)
-    test = PreTrain()
-    # print(test.stn_forward(test_tensor))
-    print(test.pNet_forward(test_tensor).shape)

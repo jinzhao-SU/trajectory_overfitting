@@ -14,7 +14,7 @@ from utils import draw_roc_curve, calculate_precision_recall, visualize_sum_test
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
-def train(model, train_loader, device, optimizer, criterion, epoch):
+def train(model, train_loader, device, optimizer, criterion, epoch, weight):
     model.train()
     sum_running_loss = 0.0
     loss_bce = 0.0
@@ -24,11 +24,14 @@ def train(model, train_loader, device, optimizer, criterion, epoch):
         optimizer.zero_grad()
 
         task = data['task'].to(device)
-        label = data['label'].to(device)
+        label = data['label'].to(device).float()
         #model prediction
         prediction = model(task)
         #loss
         loss_bce = criterion(prediction, label.data)
+        weight_ = weight[label.data.view(-1).long()].view_as(label)
+        loss_bce = loss_bce * weight_.to(device)
+        loss_bce = loss_bce.mean()
 
         # update the weights within the model
         loss_bce.backward()
@@ -44,7 +47,7 @@ def train(model, train_loader, device, optimizer, criterion, epoch):
             print('\nTraining phase: epoch: {} batch:{} Loss: {:.4f}\n'.format(epoch, batch_idx, sum_epoch_loss))
 
 
-def val(model, test_loader, device, criterion, epoch):
+def val(model, test_loader, device, criterion, epoch, weight):
     model.eval()
     sum_running_loss = 0.0
     num_images = 0
@@ -53,11 +56,14 @@ def val(model, test_loader, device, criterion, epoch):
     with torch.no_grad():
         for batch_idx, data in enumerate(tqdm(test_loader)):
             task = data['task'].to(device)
-            label = data['label'].to(device)
+            label = data['label'].to(device).float()
 
             prediction = model(x_image=task)
             # loss
             loss_bce = criterion(prediction, label.data)
+            weight_ = weight[label.data.view(-1).long()].view_as(label)
+            loss_bce = loss_bce * weight_.to(device)
+            loss_bce = loss_bce.mean()
 
             # accumulate loss
             sum_running_loss += loss_bce.item() * task.size(0)
@@ -135,7 +141,7 @@ def main():
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=30)
 
     if args.eval_only:
-        loss = val(model_ft, test_loader, device, criterion, 0)
+        loss = val(model_ft, test_loader, device, criterion, 0, weight)
         print('\nTesting phase: epoch: {} Loss: {:.4f}\n'.format(0, loss))
         return True
 
@@ -144,8 +150,8 @@ def main():
         print('Epoch {}/{}'.format(epoch, args.num_epochs - 1))
         print('-' * 80)
         exp_lr_scheduler.step()
-        train(model_ft, train_loader, device, optimizer_ft, criterion, epoch)
-        loss = val(model_ft, test_loader, device, criterion, epoch)
+        train(model_ft, train_loader, device, optimizer_ft, criterion, epoch, weight)
+        loss = val(model_ft, test_loader, device, criterion, epoch, weight)
         if loss < best_loss:
             save_model(checkpoint_dir=args.checkpoint_dir,
                        model_checkpoint_name=args.model_checkpoint_name + '_' + str(loss),
