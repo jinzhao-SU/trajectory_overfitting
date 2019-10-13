@@ -71,7 +71,6 @@ def val(model, test_loader, device, criterion, epoch):
             return loss
 
 
-
 def save_model(checkpoint_dir, model_checkpoint_name, model):
     model_save_path = '{}/{}'.format(checkpoint_dir, model_checkpoint_name)
     print('save model to: \n{}'.format(model_save_path))
@@ -83,7 +82,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_path", help="data path", required=True, type=str)
-    parser.add_argument("--structure", help="the structure of the feature embedding model", required=True, type=str)
+    parser.add_argument("--label_path", help="label path", required=True, type=str)
     parser.add_argument("--lr", help="learning rate", required=True, type=float)
     parser.add_argument("--momentum", help="momentum", required=True, type=float)
     parser.add_argument("--weight_decay", help="weight decay", required=True, type=float)
@@ -101,7 +100,7 @@ def main():
 
     device = torch.device("cuda")
 
-    all_dataset = UAVDatasetTuple(image_path=args.data_path, mode="train", structure=args.structure)
+    all_dataset = UAVDatasetTuple(task_path=args.data_path, label_path=args.label_path)
     # positive_ratio, negative_ratio = all_dataset.get_class_count()
     # weight = torch.FloatTensor((positive_ratio, negative_ratio))
     train_size = int(args.split_ratio * len(all_dataset))
