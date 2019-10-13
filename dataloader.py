@@ -5,23 +5,19 @@ import sys
 
 class UAVDatasetTuple(Dataset):
     def __init__(self, task_path, label_path):
-        self.tasks_path = task_path
+        self.task_path = task_path
         self.label_path = label_path
-        self._get_tuple()
         self.label_md = []
         self.task_md = []
+        self._get_tuple()
 
     def __len__(self):
         return len(self.label_md)
 
     def _get_tuple(self):
-        task_collection = np.load(self.task_path)
-        label_collection = np.load(self.label_path)
-        assert len(task_collection) == len(label_collection), "not identical"
-
-        for idx, _ in enumerate(task_collection):
-            self.task_md.append(task_collection[idx].float())
-            self.label_md.append(label_collection[idx].float())
+        self.task_md = np.load(self.task_path).astype(float)
+        self.label_md = np.load(self.label_path).astype(float)
+        assert len(self.task_md) == len(self.label_md), "not identical"
 
     def __getitem__(self, idx):
         sample = {}
