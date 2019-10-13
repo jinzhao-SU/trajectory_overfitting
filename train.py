@@ -9,6 +9,7 @@ from tqdm import tqdm
 from torch.optim import lr_scheduler
 from model import PreTrain
 from dataloader import UAVDatasetTuple
+from utils import draw_roc_curve, calculate_precision_recall, visualize_sum_testing_result, visualize_lstm_testing_result
 
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
