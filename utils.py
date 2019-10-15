@@ -103,10 +103,10 @@ def visualize_sum_testing_result(prediction, label, batch_id, epoch):
     for idx, _ in enumerate(prediction):
         prediction_output = prediction[idx].cpu().detach()
         prediction_output = torch.squeeze(prediction_output)
-        print (prediction_output.shape)
+        # print (prediction_output.shape)
         label_output = label[idx].cpu().detach()
         label_output = torch.squeeze(label_output)
-        print(label_output.shape)
+        # print(label_output.shape)
         # prediction_output[prediction_output < 0.30] = 0
         # output[output >= 0.50] = 1
         # plt.imshow(prediction_output)
